@@ -1,8 +1,8 @@
 import { useScheduler } from '#scheduler';
 import prisma from '../db';
+import config from '../../config.json';
 
 const FIVE_MINUTES = 1000 * 60 * 5;
-const ONE_HOUR = 1000 * 60 * 60;
 
 export default defineNitroPlugin(() => {
   startScheduler();
@@ -14,7 +14,7 @@ function startScheduler() {
 
   scheduler.run(() => {
     checkPings();
-  }).everyHours(1);
+  }).everyMinutes(config.checkIntervalMinutes);
 }
 
 async function checkPings() {
@@ -35,8 +35,8 @@ async function checkPings() {
   const lastPingDate = new Date(lastUpPing.date);
   const now = new Date();
 
-  if (now.getTime() - lastPingDate.getTime() > ONE_HOUR + FIVE_MINUTES) {
-    console.log('Last up ping was more than 65 minutes ago');
+  if (now.getTime() - lastPingDate.getTime() > config.checkIntervalMinutes + FIVE_MINUTES) {
+    console.log(`Last up ping was more than ${config.checkIntervalMinutes + FIVE_MINUTES} minutes ago`);
 
     await prisma.ping.create({
       data: {

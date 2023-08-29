@@ -88,7 +88,7 @@ function dateToString(data: string) {
         <div :class="`${lastPingIsUp ? 'bg-[rgb(102,212,172)]' : 'bg-orange'}`"></div>
         <Icon name="material-symbols:bolt-rounded" size="70" color="white" />
       </div>
-      <p class="mt-5 font-light text-[#fff] text-sm opacity-40">{{ lastPingText ?? 'Jamais mis a jour' }}</p>
+      <p class="mt-5 font-light text-[#fff] text-sm opacity-40">{{ lastPingText ?? 'Jamais mis à jour' }}</p>
     </div>
     <p class="text-[#fff] font-semibold">{{ statusText }}</p>
     <div class="w-[600px] h-[150px] bg-gray-dark rounded-xl flex flex-col items-center justify-between py-3 px-5">
@@ -103,7 +103,7 @@ function dateToString(data: string) {
         </div>
       </div>
       <div class="flex items-center justify-between w-full text-gray-light opacity-60 text-sm">
-        <p>Il y a 7 jours</p>
+        <p>Il y à 7 jours</p>
         <p>Aujourd'hui</p>
       </div>
     </div>
