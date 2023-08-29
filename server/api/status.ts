@@ -1,16 +1,28 @@
 import { Ping } from "@prisma/client";
 import prisma from "../db";
 
-type StatusPing = Omit<Ping, 'id'>;
-
 async function addUpStatusPing() {
-  return prisma.ping.create({
+  const lastPing = await prisma.ping.findFirst({
+    orderBy: {
+      date: 'desc'
+    },
+    take: 1
+  });
+
+  if (lastPing?.isUp === false) {
+    await prisma.alert.create({
+      data: {
+        isUp: true,
+      }
+    });
+  }
+  return await prisma.ping.create({
     data: { isUp: true }
   })
 }
 
-function filterPingsByDays(pings: StatusPing[]) {
-  const pingsByDay = new Map<string, StatusPing[]>()
+function filterPingsByDays(pings: Ping[]) {
+  const pingsByDay = new Map<string, Ping[]>()
 
   for (const ping of pings) {
     const date = new Date(ping.date)
@@ -22,11 +34,11 @@ function filterPingsByDays(pings: StatusPing[]) {
     pingsByDay.set(day, pingsForDay)
   }
 
-  const finalPings: StatusPing[] = [];
+  const finalPings: Ping[] = [];
 
   for (const pingsForDay of pingsByDay.values()) {
 
-    const pingsByQuarter = new Map<number, StatusPing[]>()
+    const pingsByQuarter = new Map<number, Ping[]>()
     for (const ping of pingsForDay) {
       const date = new Date(ping.date)
       const quarter = Math.floor(date.getHours() / 6)
@@ -52,10 +64,6 @@ function filterPingsByDays(pings: StatusPing[]) {
 
 async function listStatusPings() {
   const pings = await prisma.ping.findMany({
-    select: {
-      isUp: true,
-      date: true
-    },
     where: {
       date: {
         gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7)
@@ -63,7 +71,16 @@ async function listStatusPings() {
     }
   })
 
-  return filterPingsByDays(pings);
+  const filteredPings = filterPingsByDays(pings);
+  const lastPing = pings[pings.length - 1];
+  if (lastPing)
+    return [...filteredPings, lastPing];
+  return filteredPings;
+}
+
+async function listAlerts() {
+  const alerts = await prisma.alert.findMany();
+  return alerts;
 }
 
 export default defineEventHandler(async (event) => {
@@ -81,6 +98,7 @@ export default defineEventHandler(async (event) => {
   const pings = await listStatusPings()
   return {
     pings,
-    lastPing: pings.length > 0 ? pings[pings.length - 1].date : null
+    lastPing: pings.length > 0 ? pings[pings.length - 1].date : null,
+    alerts: await listAlerts()
   };
 })

@@ -1,13 +1,21 @@
 <script lang="ts" setup>
-
 type Ping = {
+  id: number;
   isUp: boolean;
-  date: Date;
+  date: string;
 };
 
-const { data } = useAsyncData<{ pings: Ping[], lastPing: string }>('pings', () =>
-  $fetch('/api/status')
-);
+type Alert = {
+  id: number;
+  date: string;
+  isUp: boolean;
+};
+
+const { data } = useAsyncData<{
+  pings: Ping[];
+  lastPing: string;
+  alerts: Alert[];
+}>("pings", () => $fetch("/api/status"));
 
 const lastPingText = computed(() => {
   const body = data.value;
@@ -64,16 +72,16 @@ const statusText = computed(() => {
   const hasIssueLastDays = body.pings.some((ping) => !ping.isUp);
 
   if (hasIssueLastDays) {
-    return 'Il y a eu des coupures d\'électricité dans la maison ces derniers jours.';
+    return "Il y a eu des coupures d'électricité dans la maison ces derniers jours.";
   }
 
-  return 'Rien d\'anormal sur l\'electricite de la maison.';
+  return "Rien d'anormal sur l'electricite de la maison.";
 });
 
 function dateToString(data: string) {
   const date = new Date(data);
   const day = date.getDate();
-  const month = date.toLocaleString('fr-FR', { month: 'long' });
+  const month = date.toLocaleString("fr-FR", { month: "long" });
   const hours = date.getHours();
   const minutes = date.getMinutes();
 
@@ -82,29 +90,81 @@ function dateToString(data: string) {
 </script>
 
 <template>
-  <div class="w-screen h-screen flex flex-col items-center justify-evenly">
+  <div
+    class="w-screen h-screen flex flex-col items-center justify-evenly pt-20"
+  >
     <div class="flex flex-col items-center">
-      <div id="status" :class="`${lastPingIsUp ? 'bg-[rgb(102,212,172)]' : 'bg-orange'}`">
-        <div :class="`${lastPingIsUp ? 'bg-[rgb(102,212,172)]' : 'bg-orange'}`"></div>
+      <div
+        id="status"
+        :class="`${lastPingIsUp ? 'bg-[rgb(102,212,172)]' : 'bg-orange'}`"
+      >
+        <div
+          :class="`${lastPingIsUp ? 'bg-[rgb(102,212,172)]' : 'bg-orange'}`"
+        ></div>
         <Icon name="material-symbols:bolt-rounded" size="70" color="white" />
       </div>
-      <p class="mt-5 font-light text-[#fff] text-sm opacity-40">{{ lastPingText ?? 'Jamais mis à jour' }}</p>
+      <p class="mt-5 font-light text-[#fff] text-sm opacity-40">
+        {{ lastPingText ?? "Jamais mis à jour" }}
+      </p>
     </div>
     <p class="text-[#fff] font-semibold">{{ statusText }}</p>
-    <div class="w-[600px] h-[150px] bg-gray-dark rounded-xl flex flex-col items-center justify-between py-3 px-5">
-      <div class="flex items-center w-full">
-        <Icon name="material-symbols:history-toggle-off-rounded" size="20" color="white" />
-        <p class="text-[#fff] ml-2">Historique</p>
-      </div>
-      <div class="flex items-center justify-between w-full h-full">
-        <div class="pingItem" v-for="ping in limitedPings" :key="ping.date"
-          :class="`relative w-2 rounded-lg h-[50%] ${ping.isUp ? 'bg-[rgb(102,212,172)]' : 'bg-orange'}`">
-          <p class="absolute -top-10 bg-gray-light rounded-sm">{{ dateToString(ping.date) }}</p>
+    <div class="flex flex-col items-center">
+      <div
+        class="w-[600px] h-[150px] bg-gray-dark rounded-xl flex flex-col items-center justify-between py-3 px-5"
+      >
+        <div class="flex items-center w-full">
+          <Icon
+            name="material-symbols:history-toggle-off-rounded"
+            size="20"
+            color="white"
+          />
+          <p class="text-[#fff] ml-2">Historique</p>
+        </div>
+        <div class="flex items-center justify-between w-full h-full">
+          <div
+            class="pingItem"
+            v-for="ping in limitedPings"
+            :key="ping.id"
+            :class="`relative w-2 rounded-lg h-[50%] ${
+              ping.isUp ? 'bg-[rgb(102,212,172)]' : 'bg-orange'
+            }`"
+          >
+            <p class="absolute -top-10 bg-gray-light rounded-sm">
+              {{ dateToString(ping.date) }}
+            </p>
+          </div>
+        </div>
+        <div
+          class="flex items-center justify-between w-full text-gray-light opacity-60 text-sm"
+        >
+          <p>Il y a 7 jours</p>
+          <p>Aujourd'hui</p>
         </div>
       </div>
-      <div class="flex items-center justify-between w-full text-gray-light opacity-60 text-sm">
-        <p>Il y à 7 jours</p>
-        <p>Aujourd'hui</p>
+      <Icon
+        name="icon-park-solid:down-one"
+        size="30"
+        color="white"
+        class="opacity-40 mt-10"
+      />
+    </div>
+  </div>
+  <div class="w-screen flex flex-col items-center pb-20">
+    <div
+      v-for="alert in data?.alerts ?? []"
+      :key="alert.id"
+      class="w-[600px] h-[50px] bg-gray-dark rounded-xl flex py-3 px-5 items-center text-white justify-between mt-2"
+    >
+      <div class="flex items-center">
+        <Icon name="tabler:bolt-off" size="20" color="white" class="mr-3" />
+        <p class="text-[rgb(102,212,172)]">
+          {{ alert.isUp ? "Reprise" : "Coupure" }}
+        </p>
+        <p class="ml-4">{{ dateToString(alert.date) }}</p>
+      </div>
+      <div class="flex items-center">
+        <p class="mr-3">0</p>
+        <Icon name="mdi:email-sent-outline" size="20" />
       </div>
     </div>
   </div>

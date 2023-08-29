@@ -11,7 +11,23 @@ datasource db {
 }
 
 model Ping {
-  id        Int     @id @default(autoincrement())
+  id   Int      @id @default(autoincrement())
   date DateTime @default(now())
   isUp Boolean
+}
+
+model Alert {
+  id   Int      @id @default(autoincrement())
+  date DateTime @default(now())
+  isUp Boolean
+
+  alertees Alertee[]
+}
+
+model Alertee {
+  id      Int      @id @default(autoincrement())
+  email   String
+  addedAt DateTime @default(now())
+
+  alerts Alert[]
 }

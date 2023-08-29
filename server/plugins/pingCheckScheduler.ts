@@ -12,6 +12,7 @@ function startScheduler() {
   console.log('Starting scheduler');
   const scheduler = useScheduler();
 
+  checkPings();
   scheduler.run(() => {
     checkPings();
   }).everyMinutes(config.checkIntervalMinutes);
@@ -30,13 +31,37 @@ async function checkPings() {
     take: 1
   });
 
-  if (lastUpPing == null) return;
+  if (lastUpPing == null) {
+    console.log('No up pings found');
+    await prisma.ping.create({
+      data: {
+        isUp: false
+      }
+    });
+    return;
+  };
 
   const lastPingDate = new Date(lastUpPing.date);
   const now = new Date();
 
-  if (now.getTime() - lastPingDate.getTime() > config.checkIntervalMinutes + FIVE_MINUTES) {
-    console.log(`Last up ping was more than ${config.checkIntervalMinutes + FIVE_MINUTES} minutes ago`);
+  const checkInterval = config.checkIntervalMinutes * 60 * 1000 + FIVE_MINUTES;
+  if (now.getTime() - lastPingDate.getTime() > checkInterval) {
+    console.log(`Last up ping was more than ${checkInterval / 60 / 1000} minutes ago`);
+
+    const lastPing = await prisma.ping.findFirst({
+      orderBy: {
+        date: 'desc'
+      },
+      take: 1
+    });
+
+    if (lastPing?.isUp) {
+      await prisma.alert.create({
+        data: {
+          isUp: false,
+        }
+      });
+    }
 
     await prisma.ping.create({
       data: {
