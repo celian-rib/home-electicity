@@ -8,7 +8,7 @@ export default defineNitroPlugin(() => {
   startScheduler();
 });
 
-function startScheduler () {
+function startScheduler() {
   console.log('Starting scheduler');
   const scheduler = useScheduler();
 
@@ -18,30 +18,30 @@ function startScheduler () {
 }
 
 async function checkPings() {
-    console.log('Checking pings');
+  console.log('Checking pings');
 
-    const lastUpPing = await prisma.ping.findFirst({
-        orderBy: {
-            date: 'desc'
-        },
-        where: {
-            isUp: true
-        },
-        take: 1
+  const lastUpPing = await prisma.ping.findFirst({
+    orderBy: {
+      date: 'desc'
+    },
+    where: {
+      isUp: true
+    },
+    take: 1
+  });
+
+  if (lastUpPing == null) return;
+
+  const lastPingDate = new Date(lastUpPing.date);
+  const now = new Date();
+
+  if (now.getTime() - lastPingDate.getTime() > ONE_HOUR + FIVE_MINUTES) {
+    console.log('Last up ping was more than 65 minutes ago');
+
+    await prisma.ping.create({
+      data: {
+        isUp: false
+      }
     });
-
-    if (lastUpPing == null) return;
-
-    const lastPingDate = new Date(lastUpPing.date);
-    const now = new Date();
-
-    if (now.getTime() - lastPingDate.getTime() > ONE_HOUR + FIVE_MINUTES) {
-        console.log('Last up ping was more than 65 minutes ago');
-
-        await prisma.ping.create({
-            data: {
-                isUp: false
-            }
-        });
-    }
+  }
 }

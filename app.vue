@@ -44,15 +44,15 @@ const limitedPings = computed(() => {
     return;
   }
 
-  if (body.pings.length < 30) {
-    const addedPings = new Array(30 - body.pings.length).fill({
+  if (body.pings.length < 28) {
+    const addedPings = new Array(28 - body.pings.length).fill({
       isUp: false,
       date: new Date(),
     });
     return [...addedPings, ...body.pings];
   }
 
-  return body.pings.slice(0, 30);
+  return body.pings.slice(0, 28);
 });
 
 const statusText = computed(() => {
