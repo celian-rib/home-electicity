@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  spacefolio:
+    container_name: home-electricity 
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '3439:3000'
+    restart: unless-stopped
