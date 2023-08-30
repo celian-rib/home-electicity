@@ -18,7 +18,7 @@ const { data } = useAsyncData<{
   pings: Ping[];
   lastPing: string;
   alerts: Alert[];
-}>("pings", () => $fetch("/api/status"));
+}>('pings', () => $fetch('/api/status'));
 
 const lastPingText = computed(() => {
   const body = data.value;
@@ -58,7 +58,7 @@ const limitedPings = computed(() => {
   if (body.pings.length < 28) {
     const addedPings = new Array(28 - body.pings.length).fill({
       isUp: null,
-      date: null,
+      date: null
     });
     return [...addedPings, ...body.pings];
   }
@@ -72,7 +72,7 @@ const statusText = computed(() => {
     return;
   }
 
-  const hasIssueLastDays = body.pings.some((ping) => !ping.isUp);
+  const hasIssueLastDays = body.pings.some(ping => !ping.isUp);
 
   if (hasIssueLastDays) {
     return "Il y a eu des coupures d'électricité dans la maison ces derniers jours.";
@@ -81,11 +81,11 @@ const statusText = computed(() => {
   return "Rien d'anormal sur l'electricite de la maison.";
 });
 
-function dateToString(data: string) {
+function dateToString (data: string) {
   const pad = (n: number) => (n < 10 ? `0${n}` : n);
   const date = new Date(data);
   const day = date.getDate();
-  const month = date.toLocaleString("fr-FR", { month: "long" });
+  const month = date.toLocaleString('fr-FR', { month: 'long' });
   const hours = pad(date.getHours());
   const minutes = pad(date.getMinutes());
 
@@ -102,11 +102,11 @@ function dateToString(data: string) {
 </script>
 
 <template>
-  <AlerteesModal :open="alerteesModalOpen" @close="alerteesModalOpen = false" />
   <div class="w-screen flex flex-col items-center">
+    <AlerteesModal :open="alerteesModalOpen" @close="alerteesModalOpen = false" />
     <button
-      @click="alerteesModalOpen = true"
       class="fixed top-5 right-5 opacity-50 hover:opacity-100"
+      @click="alerteesModalOpen = true"
     >
       <Icon name="fluent:mail-12-filled" size="30" color="white" />
     </button>
@@ -122,7 +122,7 @@ function dateToString(data: string) {
         >
           <div
             :class="`${lastPingIsUp ? 'bg-[rgb(102,212,172)]' : 'bg-orange'}`"
-          ></div>
+          />
           <Icon name="material-symbols:bolt-rounded" size="40%" color="white" />
         </div>
         <p class="mt-5 font-light text-[#fff] text-sm opacity-40">
@@ -142,13 +142,15 @@ function dateToString(data: string) {
               size="20"
               color="white"
             />
-            <p class="text-[#fff] ml-2">Historique</p>
+            <p class="text-[#fff] ml-2">
+              Historique
+            </p>
           </div>
           <div class="flex items-center justify-between w-full h-full">
             <div
-              class="pingItem"
               v-for="ping in limitedPings"
               :key="ping.id"
+              class="pingItem"
               :class="`relative w-1 sm:w-2 rounded-lg h-[50%] ${
                 ping.isUp != null
                   ? ping.isUp
@@ -208,10 +210,14 @@ function dateToString(data: string) {
           >
             {{ alert.isUp ? "Reprise" : "Coupure" }}
           </p>
-          <p class="ml-4 text-sm">{{ dateToString(alert.date) }}</p>
+          <p class="ml-4 text-sm">
+            {{ dateToString(alert.date) }}
+          </p>
         </div>
         <div class="flex items-center">
-          <p class="mr-3">{{ alert.alerteeCount }}</p>
+          <p class="mr-3">
+            {{ alert.alerteeCount }}
+          </p>
           <Icon name="mdi:email-sent-outline" size="20" />
         </div>
       </div>

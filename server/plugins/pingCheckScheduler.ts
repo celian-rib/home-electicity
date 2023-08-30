@@ -1,6 +1,6 @@
-import { useScheduler } from '#scheduler';
 import prisma from '../db';
 import { sendAllAlertEmails } from '../utils/mailer';
+import { useScheduler } from '#scheduler';
 
 const FIVE_MINUTES = 1000 * 60 * 5;
 
@@ -8,7 +8,7 @@ export default defineNitroPlugin(() => {
   startScheduler();
 });
 
-function startScheduler() {
+function startScheduler () {
   console.log('Starting scheduler');
 
   const config = useRuntimeConfig();
@@ -20,7 +20,7 @@ function startScheduler() {
   }).everyMinutes(config.checkIntervalMinutes);
 }
 
-async function checkPings() {
+async function checkPings () {
   console.log('Checking pings');
 
   const lastUpPing = await prisma.ping.findFirst({
@@ -66,7 +66,7 @@ async function checkPings() {
         }
       });
 
-      sendAllAlertEmails('Panne électrique', 'Une panne électrique a été détectée. (https://electricite.celian.cloud)')
+      sendAllAlertEmails('Panne électrique', 'Une panne électrique a été détectée. (https://electricite.celian.cloud)');
     }
 
     await prisma.ping.create({
@@ -76,4 +76,3 @@ async function checkPings() {
     });
   }
 }
-
