@@ -1,5 +1,6 @@
 import { Ping } from "@prisma/client";
 import prisma from "../db";
+import config from "../../config.json";
 
 async function addUpStatusPing() {
   const lastPing = await prisma.ping.findFirst({
@@ -11,11 +12,10 @@ async function addUpStatusPing() {
 
   if (lastPing?.isUp === false) {
     await prisma.alert.create({
-      data: {
-        isUp: true,
-      }
+      data: { isUp: true }
     });
   }
+
   return await prisma.ping.create({
     data: { isUp: true }
   })
@@ -79,7 +79,11 @@ async function listStatusPings() {
 }
 
 async function listAlerts() {
-  const alerts = await prisma.alert.findMany();
+  const alerts = await prisma.alert.findMany({
+    orderBy: {
+      date: 'desc'
+    },
+  });
   return alerts;
 }
 
@@ -87,10 +91,8 @@ export default defineEventHandler(async (event) => {
   if (event.method === 'POST') {
     await addUpStatusPing();
     return {
-      statusCode: 200,
-      body: {
-        message: 'Ping added'
-      }
+      message: 'Ping added',
+      expectedNextPingMinutes: config.checkIntervalMinutes,
     };
   }
 

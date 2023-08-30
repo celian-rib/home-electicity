@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 type Ping = {
   id: number;
-  isUp: boolean;
-  date: string;
+  isUp: boolean | null;
+  date: string | null;
 };
 
 type Alert = {
@@ -54,8 +54,8 @@ const limitedPings = computed(() => {
 
   if (body.pings.length < 28) {
     const addedPings = new Array(28 - body.pings.length).fill({
-      isUp: false,
-      date: new Date(),
+      isUp: null,
+      date: null, 
     });
     return [...addedPings, ...body.pings];
   }
@@ -85,32 +85,40 @@ function dateToString(data: string) {
   const hours = date.getHours();
   const minutes = date.getMinutes();
 
+  if (new Date().getDate() === day) {
+    return `Aujourd'hui ${hours}:${minutes}`;
+  }
+
+  if (new Date().getDate() - 1 === day) {
+    return `Hier ${hours}:${minutes}`;
+  }
+
   return `${day} ${month} ${hours}:${minutes}`;
 }
 </script>
 
 <template>
   <div
-    class="w-screen h-screen flex flex-col items-center justify-evenly pt-20"
+    class="w-screen h-[calc(100dvh)] flex flex-col items-center justify-evenly sm:pt-20 pt-10"
   >
     <div class="flex flex-col items-center">
       <div
         id="status"
-        :class="`${lastPingIsUp ? 'bg-[rgb(102,212,172)]' : 'bg-orange'}`"
+        :class="`${lastPingIsUp ? 'bg-[rgb(102,212,172)]' : 'bg-orange'} sm:w-[170px] sm:h-[170px] w-32 h-32`"
       >
         <div
           :class="`${lastPingIsUp ? 'bg-[rgb(102,212,172)]' : 'bg-orange'}`"
         ></div>
-        <Icon name="material-symbols:bolt-rounded" size="70" color="white" />
+        <Icon name="material-symbols:bolt-rounded" size="40%" color="white" />
       </div>
       <p class="mt-5 font-light text-[#fff] text-sm opacity-40">
         {{ lastPingText ?? "Jamais mis à jour" }}
       </p>
     </div>
-    <p class="text-[#fff] font-semibold">{{ statusText }}</p>
-    <div class="flex flex-col items-center">
+    <p class="text-[#fff] font-semibold max-w-[80%] text-center">{{ statusText }}</p>
+    <div class="flex flex-col items-center w-screen">
       <div
-        class="w-[600px] h-[150px] bg-gray-dark rounded-xl flex flex-col items-center justify-between py-3 px-5"
+        class="w-[90%] sm:w-[600px] h-[150px] bg-gray-dark rounded-xl flex flex-col items-center justify-between py-3 px-5"
       >
         <div class="flex items-center w-full">
           <Icon
@@ -120,16 +128,16 @@ function dateToString(data: string) {
           />
           <p class="text-[#fff] ml-2">Historique</p>
         </div>
-        <div class="flex items-center justify-between w-full h-full">
+        <div class="flex items-center justify-between w-full h-full ">
           <div
             class="pingItem"
             v-for="ping in limitedPings"
             :key="ping.id"
-            :class="`relative w-2 rounded-lg h-[50%] ${
-              ping.isUp ? 'bg-[rgb(102,212,172)]' : 'bg-orange'
+            :class="`relative w-1 sm:w-2 rounded-lg h-[50%] ${
+              ping.isUp != null ? ping.isUp ? 'bg-[rgb(102,212,172)]' : 'bg-orange' : 'bg-gray'
             }`"
           >
-            <p class="absolute -top-10 bg-gray-light rounded-sm">
+            <p v-if="ping.isUp != null" class="absolute -top-10 bg-gray-light rounded-sm">
               {{ dateToString(ping.date) }}
             </p>
           </div>
@@ -153,14 +161,15 @@ function dateToString(data: string) {
     <div
       v-for="alert in data?.alerts ?? []"
       :key="alert.id"
-      class="w-[600px] h-[50px] bg-gray-dark rounded-xl flex py-3 px-5 items-center text-white justify-between mt-2"
+      class="w-[90%] sm:w-[600px] h-[50px] bg-gray-dark rounded-xl flex py-3 px-5 items-center text-white justify-between mt-2"
     >
       <div class="flex items-center">
-        <Icon name="tabler:bolt-off" size="20" color="white" class="mr-3" />
-        <p class="text-[rgb(102,212,172)]">
+        <Icon v-if="alert.isUp == false" name="tabler:bolt-off" size="20" color="white" class="mr-3" />
+        <Icon v-else name="tabler:bolt" size="20" color="white" class="mr-3" />
+        <p :class="`${alert.isUp ? 'text-[rgb(102,212,172)]' : 'text-orange'} sm:w-20`">
           {{ alert.isUp ? "Reprise" : "Coupure" }}
         </p>
-        <p class="ml-4">{{ dateToString(alert.date) }}</p>
+        <p class="ml-4 text-sm">{{ dateToString(alert.date) }}</p>
       </div>
       <div class="flex items-center">
         <p class="mr-3">0</p>
@@ -177,9 +186,6 @@ body {
 
 #status {
   position: relative;
-
-  height: 170px;
-  width: 170px;
 
   display: flex;
   align-items: center;
