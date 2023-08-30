@@ -25,7 +25,7 @@ export default async function sendEmail(email: string, subject: string, content:
   const mailOptions: nodemailer.SendMailOptions = {
     from: {
       address: mailAddress,
-      name: `Electricité | ${process.env.HOME_NAME}`,
+      name: `Electricité | ${config.homeName}`,
     },
     to: email,
     subject,
