@@ -55,7 +55,7 @@ const limitedPings = computed(() => {
   if (body.pings.length < 28) {
     const addedPings = new Array(28 - body.pings.length).fill({
       isUp: null,
-      date: null, 
+      date: null,
     });
     return [...addedPings, ...body.pings];
   }
@@ -98,82 +98,114 @@ function dateToString(data: string) {
 </script>
 
 <template>
-  <div
-    class="w-screen h-[calc(100dvh)] flex flex-col items-center justify-evenly sm:pt-20 pt-10"
-  >
-    <div class="flex flex-col items-center">
-      <div
-        id="status"
-        :class="`${lastPingIsUp ? 'bg-[rgb(102,212,172)]' : 'bg-orange'} sm:w-[170px] sm:h-[170px] w-32 h-32`"
-      >
+  <div class="w-screen flex flex-col items-center">
+    <button class="absolute top-5 right-5 opacity-50 hover:opacity-100">
+      <Icon name="ci:settings" size="30" color="white" />
+    </button>
+    <div
+      class="w-screen h-[calc(100dvh)] flex flex-col items-center justify-evenly sm:pt-20 pt-10"
+    >
+      <div class="flex flex-col items-center">
         <div
-          :class="`${lastPingIsUp ? 'bg-[rgb(102,212,172)]' : 'bg-orange'}`"
-        ></div>
-        <Icon name="material-symbols:bolt-rounded" size="40%" color="white" />
-      </div>
-      <p class="mt-5 font-light text-[#fff] text-sm opacity-40">
-        {{ lastPingText ?? "Jamais mis à jour" }}
-      </p>
-    </div>
-    <p class="text-[#fff] font-semibold max-w-[80%] text-center">{{ statusText }}</p>
-    <div class="flex flex-col items-center w-screen">
-      <div
-        class="w-[90%] sm:w-[600px] h-[150px] bg-gray-dark rounded-xl flex flex-col items-center justify-between py-3 px-5"
-      >
-        <div class="flex items-center w-full">
-          <Icon
-            name="material-symbols:history-toggle-off-rounded"
-            size="20"
-            color="white"
-          />
-          <p class="text-[#fff] ml-2">Historique</p>
-        </div>
-        <div class="flex items-center justify-between w-full h-full ">
+          id="status"
+          :class="`${
+            lastPingIsUp ? 'bg-[rgb(102,212,172)]' : 'bg-orange'
+          } sm:w-[170px] sm:h-[170px] w-32 h-32`"
+        >
           <div
-            class="pingItem"
-            v-for="ping in limitedPings"
-            :key="ping.id"
-            :class="`relative w-1 sm:w-2 rounded-lg h-[50%] ${
-              ping.isUp != null ? ping.isUp ? 'bg-[rgb(102,212,172)]' : 'bg-orange' : 'bg-gray'
-            }`"
+            :class="`${lastPingIsUp ? 'bg-[rgb(102,212,172)]' : 'bg-orange'}`"
+          ></div>
+          <Icon name="material-symbols:bolt-rounded" size="40%" color="white" />
+        </div>
+        <p class="mt-5 font-light text-[#fff] text-sm opacity-40">
+          {{ lastPingText ?? "Jamais mis à jour" }}
+        </p>
+      </div>
+      <p class="text-[#fff] font-semibold max-w-[80%] text-center">
+        {{ statusText }}
+      </p>
+      <div class="flex flex-col items-center w-screen">
+        <div
+          class="w-[90%] sm:w-[600px] h-[150px] bg-gray-dark rounded-xl flex flex-col items-center justify-between py-3 px-5"
+        >
+          <div class="flex items-center w-full">
+            <Icon
+              name="material-symbols:history-toggle-off-rounded"
+              size="20"
+              color="white"
+            />
+            <p class="text-[#fff] ml-2">Historique</p>
+          </div>
+          <div class="flex items-center justify-between w-full h-full">
+            <div
+              class="pingItem"
+              v-for="ping in limitedPings"
+              :key="ping.id"
+              :class="`relative w-1 sm:w-2 rounded-lg h-[50%] ${
+                ping.isUp != null
+                  ? ping.isUp
+                    ? 'bg-[rgb(102,212,172)]'
+                    : 'bg-orange'
+                  : 'bg-gray'
+              }`"
+            >
+              <p
+                v-if="ping.isUp != null"
+                class="absolute -top-10 bg-gray-light rounded-sm"
+              >
+                {{ dateToString(ping.date) }}
+              </p>
+            </div>
+          </div>
+          <div
+            class="flex items-center justify-between w-full text-gray-light opacity-60 text-sm"
           >
-            <p v-if="ping.isUp != null" class="absolute -top-10 bg-gray-light rounded-sm">
-              {{ dateToString(ping.date) }}
-            </p>
+            <p>Il y a 7 jours</p>
+            <p>Aujourd'hui</p>
           </div>
         </div>
-        <div
-          class="flex items-center justify-between w-full text-gray-light opacity-60 text-sm"
-        >
-          <p>Il y a 7 jours</p>
-          <p>Aujourd'hui</p>
-        </div>
+        <Icon
+          name="icon-park-solid:down-one"
+          size="30"
+          color="white"
+          class="opacity-40 mt-10"
+        />
       </div>
-      <Icon
-        name="icon-park-solid:down-one"
-        size="30"
-        color="white"
-        class="opacity-40 mt-10"
-      />
     </div>
-  </div>
-  <div class="w-screen flex flex-col items-center pb-20">
-    <div
-      v-for="alert in data?.alerts ?? []"
-      :key="alert.id"
-      class="w-[90%] sm:w-[600px] h-[50px] bg-gray-dark rounded-xl flex py-3 px-5 items-center text-white justify-between mt-2"
-    >
-      <div class="flex items-center">
-        <Icon v-if="alert.isUp == false" name="tabler:bolt-off" size="20" color="white" class="mr-3" />
-        <Icon v-else name="tabler:bolt" size="20" color="white" class="mr-3" />
-        <p :class="`${alert.isUp ? 'text-[rgb(102,212,172)]' : 'text-orange'} sm:w-20`">
-          {{ alert.isUp ? "Reprise" : "Coupure" }}
-        </p>
-        <p class="ml-4 text-sm">{{ dateToString(alert.date) }}</p>
-      </div>
-      <div class="flex items-center">
-        <p class="mr-3">0</p>
-        <Icon name="mdi:email-sent-outline" size="20" />
+    <div class="w-screen flex flex-col items-center pb-20">
+      <div
+        v-for="alert in data?.alerts ?? []"
+        :key="alert.id"
+        class="w-[90%] sm:w-[600px] h-[50px] bg-gray-dark rounded-xl flex py-3 px-5 items-center text-white justify-between mt-2"
+      >
+        <div class="flex items-center">
+          <Icon
+            v-if="alert.isUp == false"
+            name="tabler:bolt-off"
+            size="20"
+            color="white"
+            class="mr-3"
+          />
+          <Icon
+            v-else
+            name="tabler:bolt"
+            size="20"
+            color="white"
+            class="mr-3"
+          />
+          <p
+            :class="`${
+              alert.isUp ? 'text-[rgb(102,212,172)]' : 'text-orange'
+            } sm:w-20`"
+          >
+            {{ alert.isUp ? "Reprise" : "Coupure" }}
+          </p>
+          <p class="ml-4 text-sm">{{ dateToString(alert.date) }}</p>
+        </div>
+        <div class="flex items-center">
+          <p class="mr-3">0</p>
+          <Icon name="mdi:email-sent-outline" size="20" />
+        </div>
       </div>
     </div>
   </div>
@@ -182,6 +214,8 @@ function dateToString(data: string) {
 <style>
 body {
   background-color: #0f1727;
+  width: 100vw;
+  overflow: hidden;
 }
 
 #status {
