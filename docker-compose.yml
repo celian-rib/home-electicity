@@ -9,5 +9,28 @@ services:
     ports:
       - '3439:3000'
     restart: unless-stopped
+    networks:
+      - back
+    environment:
+      TZ: Europe/Paris
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}"
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:14.1-alpine
+    networks:
+      - back
+    ports:
+      - "${POSTGRES_EXPOSE_PORTS}"
+    environment:
+      TZ: Europe/Paris
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_DB: "${POSTGRES_DB}"
+    restart: unless-stopped
     volumes:
-      - ./prisma:/app/prisma
+      - ./data:/var/lib/postgresql/data
+
+networks:
+  back:
