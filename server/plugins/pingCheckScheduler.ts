@@ -8,18 +8,10 @@ export default defineNitroPlugin(() => {
   startScheduler();
 });
 
-function getTimerInterval() {
-  const timerIntervalStr = process.env.CHECK_INTERVAL_MINUTES;
-  
-  if (!timerIntervalStr)
-    throw new Error('Missing timer interval');
-  
-  const timerInterval = parseInt(timerIntervalStr, 30);
-  return timerInterval;
-}
-
 function startScheduler() {
   console.log('Starting scheduler');
+
+  const config = useRuntimeConfig();
   
 
   const scheduler = useScheduler();
@@ -27,7 +19,7 @@ function startScheduler() {
   checkPings();
   scheduler.run(() => {
     checkPings();
-  }).everyMinutes(getTimerInterval());
+  }).everyMinutes(config.checkIntervalMinutes);
 }
 
 async function checkPings() {
@@ -56,7 +48,8 @@ async function checkPings() {
   const lastPingDate = new Date(lastUpPing.date);
   const now = new Date();
 
-  const checkInterval = getTimerInterval() * 60 * 1000 + FIVE_MINUTES;
+  const config = useRuntimeConfig();
+  const checkInterval = config.checkIntervalMinutes * 60 * 1000 + FIVE_MINUTES;
   if (now.getTime() - lastPingDate.getTime() > checkInterval) {
     console.log(`Last up ping was more than ${checkInterval / 60 / 1000} minutes ago`);
 

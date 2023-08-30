@@ -92,9 +92,10 @@ async function listAlerts() {
 export default defineEventHandler(async (event) => {
   if (event.method === 'POST') {
     await addUpStatusPing();
+    const config = useRuntimeConfig();
     return {
       message: 'Ping added',
-      expectedNextPingMinutes: Number(process.env.CHECK_INTERVAL_MINUTES ?? 30),
+      expectedNextPingMinutes: config.checkIntervalMinutes,
     };
   }
 

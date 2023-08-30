@@ -2,9 +2,12 @@ import nodemailer from 'nodemailer';
 import prisma from '../db';
 
 export default async function sendEmail(email: string, subject: string, content: string) {
-  const mailAddress = process.env.MAIL_ADDRESS;
-  const mailPassword = process.env.MAIL_PASSWORD;
-  const mailSmtp = process.env.MAIL_SMTP_HOST;
+  const config = useRuntimeConfig();
+  const {
+    mailAddress,
+    mailPassword,
+    mailSmtp,
+  } = config;
 
   if (!mailAddress || !mailPassword || !mailSmtp)
     throw new Error('Missing mail config');
