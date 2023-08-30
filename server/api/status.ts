@@ -15,7 +15,7 @@ async function addUpStatusPing() {
       data: { isUp: true, alerteeCount: (await prisma.alertee.count()) }
     });
 
-    sendAllAlertEmails('Retour à la normale', 'Le courant est revenu !')
+    sendAllAlertEmails('Retour à la normale', 'Le courant est revenu ! (https://electricite.celian.cloud)')
   }
 
   return await prisma.ping.create({

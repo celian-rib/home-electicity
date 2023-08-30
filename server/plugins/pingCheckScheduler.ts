@@ -66,7 +66,7 @@ async function checkPings() {
         }
       });
 
-      sendAllAlertEmails('Panne électrique', 'Une panne électrique a été détectée.')
+      sendAllAlertEmails('Panne électrique', 'Une panne électrique a été détectée. (https://electricite.celian.cloud)')
     }
 
     await prisma.ping.create({
