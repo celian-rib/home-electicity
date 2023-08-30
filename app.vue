@@ -111,7 +111,7 @@ function dateToString(data: string) {
       <Icon name="fluent:mail-12-filled" size="30" color="white" />
     </button>
     <div
-      class="w-screen h-[calc(100dvh)] flex flex-col items-center justify-evenly sm:pt-20 pt-10"
+      class="w-screen h-screen flex flex-col items-center justify-evenly sm:pt-20 pt-10 pb-20 sm:pb-0"
     >
       <div class="flex flex-col items-center">
         <div
