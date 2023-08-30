@@ -96,7 +96,6 @@ export default defineEventHandler(async (event) => {
     };
   }
 
-  console.log('GET /api/status');
   const pings = await listStatusPings()
   return {
     pings,

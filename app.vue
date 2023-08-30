@@ -11,6 +11,8 @@ type Alert = {
   isUp: boolean;
 };
 
+const alerteesModalOpen = ref(false);
+
 const { data } = useAsyncData<{
   pings: Ping[];
   lastPing: string;
@@ -79,11 +81,12 @@ const statusText = computed(() => {
 });
 
 function dateToString(data: string) {
+  const pad = (n: number) => (n < 10 ? `0${n}` : n);
   const date = new Date(data);
   const day = date.getDate();
   const month = date.toLocaleString("fr-FR", { month: "long" });
-  const hours = date.getHours();
-  const minutes = date.getMinutes();
+  const hours = pad(date.getHours());
+  const minutes = pad(date.getMinutes());
 
   if (new Date().getDate() === day) {
     return `Aujourd'hui ${hours}:${minutes}`;
@@ -98,9 +101,13 @@ function dateToString(data: string) {
 </script>
 
 <template>
+  <AlerteesModal :open="alerteesModalOpen" @close="alerteesModalOpen = false" />
   <div class="w-screen flex flex-col items-center">
-    <button class="absolute top-5 right-5 opacity-50 hover:opacity-100">
-      <Icon name="ci:settings" size="30" color="white" />
+    <button
+      @click="alerteesModalOpen = true"
+      class="fixed top-5 right-5 opacity-50 hover:opacity-100"
+    >
+      <Icon name="fluent:mail-12-filled" size="30" color="white" />
     </button>
     <div
       class="w-screen h-[calc(100dvh)] flex flex-col items-center justify-evenly sm:pt-20 pt-10"
@@ -214,8 +221,6 @@ function dateToString(data: string) {
 <style>
 body {
   background-color: #0f1727;
-  width: 100vw;
-  overflow: hidden;
 }
 
 #status {
