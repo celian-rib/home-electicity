@@ -18,7 +18,7 @@ const { data } = useAsyncData<{
   pings: Ping[];
   lastPing: string;
   alerts: Alert[];
-}>('pings', () => $fetch('/api/status'));
+}>(() => $fetch('/api/status'));
 
 const lastPingText = computed(() => {
   const body = data.value;
@@ -111,14 +111,14 @@ function dateToString (data: string) {
       <Icon name="fluent:mail-12-filled" size="30" color="white" />
     </button>
     <div
-      class="w-screen h-screen flex flex-col items-center justify-evenly sm:pt-20 pt-10 pb-20 sm:pb-0"
+      class="w-screen h-screen flex flex-col items-center justify-evenly sm:pt-20 pt-10 pb-[10%] sm:pb-0"
     >
-      <div class="flex flex-col items-center">
+      <div class="flex flex-col items-center w-screen">
         <div
           id="status"
           :class="`${
             lastPingIsUp ? 'bg-[rgb(102,212,172)]' : 'bg-orange'
-          } sm:w-[170px] sm:h-[170px] w-32 h-32`"
+          } sm:w-[170px] sm:h-[170px] w-28 h-28`"
         >
           <div
             :class="`${lastPingIsUp ? 'bg-[rgb(102,212,172)]' : 'bg-orange'}`"
@@ -129,7 +129,7 @@ function dateToString (data: string) {
           {{ lastPingText ?? "Jamais mis à jour" }}
         </p>
       </div>
-      <p class="text-[#fff] font-semibold max-w-[80%] text-center">
+      <p class="text-[#fff] font-semibold max-w-[80%] text-center sm:text-lg text-sm">
         {{ statusText }}
       </p>
       <div class="flex flex-col items-center w-screen">
@@ -161,7 +161,7 @@ function dateToString (data: string) {
             >
               <p
                 v-if="ping.isUp != null"
-                class="absolute -top-10 bg-gray-light rounded-sm"
+                class="fixed -top-10 bg-gray-light rounded-sm"
               >
                 {{ dateToString(ping.date) }}
               </p>

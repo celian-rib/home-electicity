@@ -14,10 +14,11 @@ function startScheduler () {
   const config = useRuntimeConfig();
   const scheduler = useScheduler();
 
-  checkPings();
   scheduler.run(() => {
     checkPings();
   }).everyMinutes(config.checkIntervalMinutes);
+
+  checkPings();
 }
 
 async function checkPings () {
