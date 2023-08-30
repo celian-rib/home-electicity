@@ -1,6 +1,6 @@
 import { Ping } from "@prisma/client";
 import prisma from "../db";
-import config from "../../config.json";
+import { sendAllAlertEmails } from "../utils/mailer";
 
 async function addUpStatusPing() {
   const lastPing = await prisma.ping.findFirst({
@@ -14,6 +14,8 @@ async function addUpStatusPing() {
     await prisma.alert.create({
       data: { isUp: true }
     });
+
+    sendAllAlertEmails('Retour à la normale', 'Le courant est revenu !')
   }
 
   return await prisma.ping.create({
@@ -92,7 +94,7 @@ export default defineEventHandler(async (event) => {
     await addUpStatusPing();
     return {
       message: 'Ping added',
-      expectedNextPingMinutes: config.checkIntervalMinutes,
+      expectedNextPingMinutes: Number(process.env.CHECK_INTERVAL_MINUTES ?? 30),
     };
   }
 

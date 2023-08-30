@@ -1,6 +1,6 @@
 import { useScheduler } from '#scheduler';
 import prisma from '../db';
-import config from '../../config.json';
+import { sendAllAlertEmails } from '../utils/mailer';
 
 const FIVE_MINUTES = 1000 * 60 * 5;
 
@@ -8,14 +8,23 @@ export default defineNitroPlugin(() => {
   startScheduler();
 });
 
+const timerIntervalStr = process.env.CHECK_INTERVAL_MINUTES;
+
+if (!timerIntervalStr)
+  throw new Error('Missing timer interval');
+
+const timerInterval = parseInt(timerIntervalStr, 30);
+
 function startScheduler() {
   console.log('Starting scheduler');
+  
+
   const scheduler = useScheduler();
 
   checkPings();
   scheduler.run(() => {
     checkPings();
-  }).everyMinutes(config.checkIntervalMinutes);
+  }).everyMinutes(timerInterval);
 }
 
 async function checkPings() {
@@ -44,7 +53,7 @@ async function checkPings() {
   const lastPingDate = new Date(lastUpPing.date);
   const now = new Date();
 
-  const checkInterval = config.checkIntervalMinutes * 60 * 1000 + FIVE_MINUTES;
+  const checkInterval = timerInterval * 60 * 1000 + FIVE_MINUTES;
   if (now.getTime() - lastPingDate.getTime() > checkInterval) {
     console.log(`Last up ping was more than ${checkInterval / 60 / 1000} minutes ago`);
 
@@ -61,6 +70,8 @@ async function checkPings() {
           isUp: false,
         }
       });
+
+      sendAllAlertEmails('Panne électrique', 'Une panne électrique a été détectée.')
     }
 
     await prisma.ping.create({
@@ -70,3 +81,4 @@ async function checkPings() {
     });
   }
 }
+
