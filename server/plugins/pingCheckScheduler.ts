@@ -12,8 +12,6 @@ function startScheduler() {
   console.log('Starting scheduler');
 
   const config = useRuntimeConfig();
-  
-
   const scheduler = useScheduler();
 
   checkPings();
@@ -64,6 +62,7 @@ async function checkPings() {
       await prisma.alert.create({
         data: {
           isUp: false,
+          alerteeCount: (await prisma.alertee.count())
         }
       });
 

@@ -9,6 +9,7 @@ type Alert = {
   id: number;
   date: string;
   isUp: boolean;
+  alerteeCount: number;
 };
 
 const alerteesModalOpen = ref(false);
@@ -210,7 +211,7 @@ function dateToString(data: string) {
           <p class="ml-4 text-sm">{{ dateToString(alert.date) }}</p>
         </div>
         <div class="flex items-center">
-          <p class="mr-3">0</p>
+          <p class="mr-3">{{ alert.alerteeCount }}</p>
           <Icon name="mdi:email-sent-outline" size="20" />
         </div>
       </div>

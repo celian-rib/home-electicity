@@ -12,7 +12,7 @@ async function addUpStatusPing() {
 
   if (lastPing?.isUp === false) {
     await prisma.alert.create({
-      data: { isUp: true }
+      data: { isUp: true, alerteeCount: (await prisma.alertee.count()) }
     });
 
     sendAllAlertEmails('Retour à la normale', 'Le courant est revenu !')

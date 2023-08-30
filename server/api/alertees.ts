@@ -49,12 +49,23 @@ export default defineEventHandler(async (event) => {
   if (event.method === 'DELETE') {
     const { id: _id } = getQuery(event);
     const id = Number(_id);
-    
+
     if (!id || typeof id !== 'number' || isNaN(id)) {
       return createError({
         message: 'Missing or invalid id',
         statusCode: 400,
       })
+    }
+
+    const existingAlertee = await prisma.alertee.findUnique({
+      where: { id }
+    });
+
+    if (!existingAlertee) {
+      return createError({
+        message: 'Alertee not found',
+        statusCode: 404,
+      });
     }
 
     await deleteAlertee(id);

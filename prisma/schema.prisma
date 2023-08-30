@@ -20,14 +20,11 @@ model Alert {
   id   Int      @id @default(autoincrement())
   date DateTime @default(now())
   isUp Boolean
-
-  alertees Alertee[]
+  alerteeCount Int
 }
 
 model Alertee {
   id      Int      @id @default(autoincrement())
   email   String
   addedAt DateTime @default(now())
-
-  alerts Alert[]
 }
