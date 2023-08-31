@@ -1,3 +1,4 @@
+import { Ping } from '@prisma/client';
 import prisma from '../db';
 import { sendAllAlertEmails } from '../utils/mailer';
 import { useScheduler } from '#scheduler';
@@ -17,14 +18,40 @@ function startScheduler () {
   scheduler.run(() => {
     checkPings();
   }).everyMinutes(config.checkIntervalMinutes);
-
-  checkPings();
 }
 
 async function checkPings () {
   console.log('Checking pings');
+  const lastUpPing = await getLastUpPing();
 
-  const lastUpPing = await prisma.ping.findFirst({
+  if (lastUpPing == null) {
+    console.log('No up pings found');
+    await createDownPing();
+    return;
+  };
+
+  if (pingIsOutdated(lastUpPing)) {
+    console.log('Last up ping is outdated');
+
+    if (await lastPingIsUp()) {
+      await createDownAlert();
+    }
+
+    await createDownPing();
+  }
+}
+
+async function getLastPing () {
+  return await prisma.ping.findFirst({
+    orderBy: {
+      date: 'desc'
+    },
+    take: 1
+  });
+}
+
+async function getLastUpPing () {
+  return await prisma.ping.findFirst({
     orderBy: {
       date: 'desc'
     },
@@ -33,47 +60,40 @@ async function checkPings () {
     },
     take: 1
   });
+}
 
-  if (lastUpPing == null) {
-    console.log('No up pings found');
-    await prisma.ping.create({
-      data: {
-        isUp: false
-      }
-    });
-    return;
-  };
+async function createDownPing () {
+  await prisma.ping.create({
+    data: {
+      isUp: false
+    }
+  });
+}
 
-  const lastPingDate = new Date(lastUpPing.date);
+function pingIsOutdated (ping: Ping) {
+  const lastPingDate = new Date(ping.date);
   const now = new Date();
 
   const config = useRuntimeConfig();
   const checkInterval = config.checkIntervalMinutes * 60 * 1000 + FIVE_MINUTES;
-  if (now.getTime() - lastPingDate.getTime() > checkInterval) {
-    console.log(`Last up ping was more than ${checkInterval / 60 / 1000} minutes ago`);
+  return now.getTime() - lastPingDate.getTime() > checkInterval;
+}
 
-    const lastPing = await prisma.ping.findFirst({
-      orderBy: {
-        date: 'desc'
-      },
-      take: 1
-    });
+async function lastPingIsUp () {
+  const lastPing = await getLastPing();
+  return lastPing?.isUp;
+}
 
-    if (lastPing?.isUp) {
-      await prisma.alert.create({
-        data: {
-          isUp: false,
-          alerteeCount: (await prisma.alertee.count())
-        }
-      });
-
-      sendAllAlertEmails('Panne électrique', 'Une panne électrique a été détectée. (https://electricite.celian.cloud)');
+async function createDownAlert () {
+  await prisma.alert.create({
+    data: {
+      isUp: false,
+      alerteeCount: (await prisma.alertee.count())
     }
+  });
 
-    await prisma.ping.create({
-      data: {
-        isUp: false
-      }
-    });
-  }
+  sendAllAlertEmails(
+    'Panne électrique',
+    'Une panne électrique a été détectée. (https://electricite.celian.cloud)'
+  );
 }

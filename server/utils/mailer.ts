@@ -44,6 +44,11 @@ export async function sendAllAlertEmails (subject: string, content: string) {
   const users = await prisma.alertee.findMany();
 
   for (const user of users) {
-    await sendEmail(user.email, subject, content);
+    try {
+      await sendEmail(user.email, subject, content);
+    } catch (error) {
+      console.error(`Error sending email to ${user.email}`);
+      console.error(error);
+    }
   }
 }

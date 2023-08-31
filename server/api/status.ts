@@ -2,25 +2,71 @@ import { Ping } from '@prisma/client';
 import prisma from '../db';
 import { sendAllAlertEmails } from '../utils/mailer';
 
-async function addUpStatusPing () {
+export default defineEventHandler(async (event) => {
+  if (event.method === 'POST') {
+    await addUpStatusPing();
+    const config = useRuntimeConfig();
+
+    return {
+      message: 'Ping added',
+      expectedNextPingMinutes: config.checkIntervalMinutes
+    };
+  }
+
+  const pings = await listStatusPings();
+
+  return {
+    pings,
+    lastPing: pings.length > 0 ? pings[pings.length - 1].date : null,
+    alerts: await listAlerts()
+  };
+});
+async function createUpAlert () {
+  await prisma.alert.create({
+    data: { isUp: true, alerteeCount: (await prisma.alertee.count()) }
+  });
+
+  sendAllAlertEmails('Retour à la normale', 'Le courant est revenu ! (https://electricite.celian.cloud)');
+}
+
+async function lastPingIsUp () {
   const lastPing = await prisma.ping.findFirst({
-    orderBy: {
-      date: 'desc'
-    },
+    orderBy: { date: 'desc' },
     take: 1
   });
 
-  if (lastPing?.isUp === false) {
-    await prisma.alert.create({
-      data: { isUp: true, alerteeCount: (await prisma.alertee.count()) }
-    });
+  return lastPing?.isUp;
+}
 
-    sendAllAlertEmails('Retour à la normale', 'Le courant est revenu ! (https://electricite.celian.cloud)');
-  }
-
+async function createUpPing () {
   return await prisma.ping.create({
     data: { isUp: true }
   });
+}
+
+async function addUpStatusPing () {
+  if (!await lastPingIsUp()) {
+    createUpAlert();
+  }
+  createUpPing();
+}
+
+async function listStatusPings () {
+  const pings = await prisma.ping.findMany({
+    where: { date: { gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7) } }
+  });
+
+  const filteredPings = filterPingsByDays(pings);
+  const lastPing = pings[pings.length - 1];
+  if (lastPing) { return [...filteredPings, lastPing]; }
+  return filteredPings;
+}
+
+async function listAlerts () {
+  const alerts = await prisma.alert.findMany({
+    orderBy: { date: 'desc' }
+  });
+  return alerts;
 }
 
 function filterPingsByDays (pings: Ping[]) {
@@ -62,45 +108,3 @@ function filterPingsByDays (pings: Ping[]) {
 
   return finalPings;
 }
-
-async function listStatusPings () {
-  const pings = await prisma.ping.findMany({
-    where: {
-      date: {
-        gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7)
-      }
-    }
-  });
-
-  const filteredPings = filterPingsByDays(pings);
-  const lastPing = pings[pings.length - 1];
-  if (lastPing) { return [...filteredPings, lastPing]; }
-  return filteredPings;
-}
-
-async function listAlerts () {
-  const alerts = await prisma.alert.findMany({
-    orderBy: {
-      date: 'desc'
-    }
-  });
-  return alerts;
-}
-
-export default defineEventHandler(async (event) => {
-  if (event.method === 'POST') {
-    await addUpStatusPing();
-    const config = useRuntimeConfig();
-    return {
-      message: 'Ping added',
-      expectedNextPingMinutes: config.checkIntervalMinutes
-    };
-  }
-
-  const pings = await listStatusPings();
-  return {
-    pings,
-    lastPing: pings.length > 0 ? pings[pings.length - 1].date : null,
-    alerts: await listAlerts()
-  };
-});

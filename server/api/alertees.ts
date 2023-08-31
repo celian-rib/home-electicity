@@ -30,8 +30,6 @@ export default defineEventHandler(async (event) => {
   if (event.method === 'PUT') {
     const { email } = getQuery(event);
 
-    console.log('email', email);
-
     if (!email || typeof email !== 'string') {
       return createError({
         message: 'Missing email',
