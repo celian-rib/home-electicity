@@ -4,6 +4,10 @@ import { Alert } from '@prisma/client';
 const { alerts } = defineProps<{
   alerts: Alert[];
 }>();
+
+function alertColorClass (isUp: boolean) {
+  return isUp ? 'text-cyan' : 'text-orange';
+}
 </script>
 
 <template>
@@ -27,11 +31,7 @@ const { alerts } = defineProps<{
         color="white"
         class="mr-3"
       />
-      <p
-        :class="`${
-          alert.isUp ? 'text-[rgb(102,212,172)]' : 'text-orange'
-        } sm:w-20`"
-      >
+      <p :class="`${alertColorClass(alert.isUp)} sm:w-20`">
         {{ alert.isUp ? "Reprise" : "Coupure" }}
       </p>
       <p class="ml-4 text-sm">

@@ -29,8 +29,8 @@ export function dateToAgo (dateToConvert: string | Date | undefined) {
   const diffSeconds = diff % 60;
 
   if (diffMinutes > 0) {
-    return `Mis à jour il y a ${diffMinutes} minutes`;
+    return `il y a ${diffMinutes} minutes`;
   } else if (diffSeconds > 0) {
-    return `Mis à jour il y a ${diffSeconds} secondes`;
+    return `il y a ${diffSeconds} secondes`;
   }
 }

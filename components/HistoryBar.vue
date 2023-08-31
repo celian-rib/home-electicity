@@ -18,7 +18,15 @@ const limitedPings = computed(() => {
 
   return pings.slice(0, PINGS_COUNT);
 });
+
+function getPingColor (isUp: boolean | null) {
+  if (isUp === null) {
+    return 'bg-gray';
+  }
+  return isUp ? 'bg-cyan' : 'bg-orange';
+}
 </script>
+
 <template>
   <div
     class="w-[90%] sm:w-[600px] h-[150px] bg-gray-dark rounded-xl flex flex-col items-center justify-between py-3 px-5"
@@ -29,7 +37,7 @@ const limitedPings = computed(() => {
         size="20"
         color="white"
       />
-      <p class="text-[#fff] ml-2">
+      <p class="text-white ml-2">
         Historique
       </p>
     </div>
@@ -38,18 +46,9 @@ const limitedPings = computed(() => {
         v-for="ping in limitedPings"
         :key="ping.id"
         class="pingItem"
-        :class="`relative w-1 sm:w-2 rounded-lg h-[50%] ${
-          ping.isUp != null
-            ? ping.isUp
-              ? 'bg-[rgb(102,212,172)]'
-              : 'bg-orange'
-            : 'bg-gray'
-        }`"
+        :class="`relative w-1 sm:w-2 rounded-lg h-[50%] ${getPingColor(ping.isUp)}`"
       >
-        <p
-          v-if="ping.isUp != null"
-          class="fixed -top-10 bg-gray-light rounded-sm"
-        >
+        <p v-if="ping.isUp != null" class="fixed -top-10 bg-gray-light rounded-sm">
           {{ dateToString(ping.date) }}
         </p>
       </div>
